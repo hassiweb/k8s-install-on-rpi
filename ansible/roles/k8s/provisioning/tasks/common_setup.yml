@@ -1,0 +1,45 @@
+---
+# Install Kubeneters packages
+- name: Ensure Kubenetes packages have already been installed.
+  shell: "dpkg -l | grep kubectl"
+  ignore_errors: yes
+  register: kubectl_installed
+
+- include_tasks: install_k8s_packages.yml
+  when: kubectl_installed.failed
+
+# Disable swap
+- name: Disable swap.
+  command: "{{ item }}"
+  with_items:
+#    - swapoff -a
+    - dphys-swapfile swapoff
+    - dphys-swapfile uninstall
+    - update-rc.d dphys-swapfile remove
+
+# Enable cgroup memory
+- name: Check if cgroup memory is enabled.
+  shell: "cat /proc/cgroups | grep memory | awk '{print $4}'"
+  register: cgroup_memory_status
+
+- name: Enable cgroup memory if desabled.
+  lineinfile:
+    path: /boot/cmdline.txt
+    backrefs: true
+    state: present
+    regexp: '(.*)$'
+    line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
+  when: cgroup_memory_status.stdout|int == 0
+
+- name: Restart machine
+  shell: shutdown -r now
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: cgroup_memory_status.stdout|int == 0
+
+- name: Wait for reboot
+  wait_for_connection:
+    delay: 30
+    timeout: 300
+  when: cgroup_memory_status.stdout|int == 0

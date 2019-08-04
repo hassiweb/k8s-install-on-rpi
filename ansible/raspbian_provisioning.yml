@@ -1,0 +1,11 @@
+---
+- name: Provisioning Raspberri Pi
+  hosts: all
+  become: true
+  roles:
+    - name: common/geerlingguy.ntp
+      tags: ntp
+    - name: common/geerlingguy.docker_arm
+      tags: docker
+    - name: common/ypsman.hostname
+      tags: hostname

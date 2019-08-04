@@ -1,0 +1,33 @@
+---
+- name: Ensure dependencies are installed.
+  apt:
+    name:
+      - apt-transport-https=1.4.9
+      - ca-certificates=20161130+nmu1+deb9u1
+    state: present
+
+- name: Add Kubernetes apt key.
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes repository.
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+    update_cache: true
+
+- name: Add Kubernetes apt preferences file to pin a version.
+  template:
+    src: apt-preferences-kubernetes.j2
+    dest: /etc/apt/preferences.d/kubernetes
+
+- name: Update cache.
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install Kubernetes packages.
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl

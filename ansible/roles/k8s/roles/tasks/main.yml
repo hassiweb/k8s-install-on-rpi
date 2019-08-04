@@ -1,0 +1,5 @@
+---
+- name: Change roles of workers
+  shell: >
+    kubectl label node {{ hostvars[item]['host_name'] }} node-role.kubernetes.io/worker=worker
+  with_items: "{{ groups['workers'] }}"

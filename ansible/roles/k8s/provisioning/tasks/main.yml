@@ -1,0 +1,23 @@
+---
+# Common
+- name: Common setup.
+  include: common_setup.yml
+
+# Provision Master
+- name: Check if Kubernetes has already been initialized.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_init_stat
+
+- name: Provision master if not installed yet
+  include: provision_master.yml
+  when: "'master' in group_names and not kubernetes_init_stat.stat.exists"
+
+# Provision Workers
+- name: Sotre k8s token and hash to dummy host
+  include: store_info_to_join.yml
+  when: "'master' in group_names"
+
+- name: Provision workers
+  include: provision_workers.yml
+  when: "'workers' in group_names"

@@ -1,0 +1,19 @@
+galaxy_info:
+  author: ypsman
+  description: Change Hostname and entries in /etc/hosts
+  license: license (GPLv2, CC-BY, etc)
+  min_ansible_version: 2.3
+  platforms:
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+    - stretch
+  - name: Ubuntu
+    versions: all
+  galaxy_tags:
+  - hosts
+  - hostname
+  - Ubuntu
+  - debian
+dependencies: []

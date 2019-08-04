@@ -1,0 +1,33 @@
+---
+- name: Initialize Kubernetes master with kubeadm init.
+  command: >
+    kubeadm init
+    --pod-network-cidr={{ kubernetes_pod_network_cidr }}
+    --kubernetes-version {{ kubernetes_version_kubeadm }}
+  register: kubeadmin_init
+
+- name: Print the init output to screen.
+  debug:
+    var: kubeadmin_init.stdout
+
+- name: Ensure .kube directory exists.
+  file:
+    path: ~/.kube
+    state: directory
+
+- name: Symlink the kubectl admin.conf to ~/.kube/conf.
+  file:
+    src: /etc/kubernetes/admin.conf
+    dest: ~/.kube/config
+    state: link
+
+- name: Configure Flannel networking.
+  command: "{{ item }}"
+  with_items:
+    - kubectl apply -f {{ kubernetes_flannel_manifest_file }}
+  register: flannel_result
+  changed_when: "'created' in flannel_result.stdout"
+
+- name: Print the flannel installation log to screen
+  debug:
+    var: flannel_result.stdout
